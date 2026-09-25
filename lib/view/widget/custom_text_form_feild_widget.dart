@@ -5,30 +5,31 @@ class CoustomTextFormFeild extends StatelessWidget {
     super.key,
     this.controller, 
     this.validator, 
-    required this.label
+    this.maxLines = 1,
+    required this.label,
+    required this.hint,
     });
 
   final TextEditingController? controller;
   final String? Function(String?)? validator;
   final String label;
-
+  final String hint;
+  final int maxLines;
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: .start,
       mainAxisSize: .min,
       children: [
-          Text(label ,style: TextStyle(
-            fontSize: 16,
-            fontWeight: .bold,
-          ),
+          Text(label ,style: TextStyle(fontSize: 16,fontWeight: .bold,),
           ),
           SizedBox(height: 20,),
         TextFormField(
           controller: controller,
           validator: validator,
+          maxLines: maxLines,
           decoration: InputDecoration(
-            hint: Text("Enter Your Name", style: TextStyle( color: Colors.grey),
+            hint: Text( hint, style: TextStyle( color: Colors.grey),
             ),
             fillColor: Colors.white,
             filled: true,
