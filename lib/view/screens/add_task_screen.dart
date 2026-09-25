@@ -1,4 +1,9 @@
+import 'dart:nativewrappers/_internal/vm/lib/developer.dart';
+
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:todo_app/core/app_dialog.dart';
+import 'package:todo_app/data/model/task_model.dart';
 import 'package:todo_app/view/widget/choose_color_widget.dart';
 import 'package:todo_app/view/widget/custom_material_button.dart';
 import 'package:todo_app/view/widget/custom_text_form_feild_widget.dart';
@@ -79,13 +84,36 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               },
             ),
             SizedBox(height: 20,),
-            CustomMaterialButton( onPressed: () {
-              print("Title: ${titleTask.text}");
-              print("Dev: ${desTask.text}");
-              print("Status: $dropdownButtonValue");
-              print("Color: $colorSelected ");
+            CustomMaterialButton( 
+              onPressed: () async {
+              log("Title: ${titleTask.text}");
+              log("Dev: ${desTask.text}");
+              log("Status: $dropdownButtonValue");
+              log("Color: $colorSelected ");
+              AppDialog.showLoading(context);
+              var taskBox = Hive.box<TaskModel>("Tasks");
+              await taskBox.add(TaskModel(
+                title: titleTask.text, 
+                descripition: desTask.text,  
+                status: dropdownButtonValue == "Pending" ? 
+                .pending : 
+                .done, 
+                colorHex: colorSelected,
+                ),
+              )
+              .then((value){
+                Navigator.of(context).pop();
+                titleTask.clear();
+                desTask.clear();
+                colorSelected = 4280391411;
 
-            }, text: "Save"),
+              })
+              .catchError((error){
+                Navigator.of(context).pop();
+                AppDialog.showError(context, error);
+              });
+            },
+             text: "Save"),
           ],
         ),
       ),
