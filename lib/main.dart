@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:todo_app/core/app_routes.dart';
 import 'package:todo_app/view/screens/add_task_screen.dart';
 import 'package:todo_app/view/screens/home_screen.dart';
 import 'package:todo_app/view/screens/profile_screen.dart';
+import 'data/model/user_model.dart';
 
-void main(){
+void main() async{
+  await Hive.initFlutter();
+  WidgetsFlutterBinding.ensureInitialized();
+  Hive.registerAdapter(UserModelAdapter());
+  Hive.openBox<UserModel>('User');
+  
   runApp(const ToDoApp());
 }
 
