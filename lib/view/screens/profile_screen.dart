@@ -1,9 +1,11 @@
-import 'dart:developer';
+//import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:todo_app/core/app_dialog.dart';
 import 'package:todo_app/core/app_routes.dart';
 import 'package:todo_app/data/model/user_model.dart';
-import 'package:todo_app/view/widget/coustom_text_form_feild_widget.dart';
+import 'package:todo_app/view/widget/custom_text_form_feild_widget.dart';
+import 'package:todo_app/view/widget/custom_material_button.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -40,6 +42,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             SizedBox(height: 20,),
             CoustomTextFormFeild(
               label: "Full Name",
+              hint: "Enter Your Name",
               controller: fullName,
               validator: (value) {
                 if (value == null || value.isEmpty){
@@ -49,88 +52,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
               },
             ),
             SizedBox(height: 50,),
-            MaterialButton(
+            CustomMaterialButton(
+              text: "Create",
               onPressed: () async {
-                _showLoading();
-                var userBox = Hive.box<UserModel>('User');
-                await userBox
-                .put("UserKey", UserModel(fullName: fullName.text),)
-                .then((value) {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pushNamed(AppRoutes.home);
-                })
-                .catchError((error){ 
-                  Navigator.of(context).pop();
-                  _showError(error);   
-                });
-                
-              }, 
-              color: Color(0xff3F51B5),
-              padding: EdgeInsets.all(10),
-              minWidth: 300,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadiusGeometry.circular(12),
-              ),
-              child: Text(
-              "Create",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: .bold,
-                color: Colors.white
-              ),
-              ),
-            ),
+              AppDialog.showLoading(context);
+              var userBox = Hive.box<UserModel>('User');
+              await userBox
+              .put("UserKey", UserModel(fullName: fullName.text),)
+              .then((value) {
+               Navigator.of(context).pop();
+               Navigator.of(context).pushNamed(AppRoutes.home);
+              })
+              .catchError((error){ 
+              Navigator.of(context).pop();
+              AppDialog.showError(context ,error);   
+            });
+        
+            },),
           ],
         ),
       ),
     );
   }
-  Future<void> _showLoading() async{
-  return showDialog<void>(
-    context: context,
-    barrierDismissible: false,
-    builder: (BuildContext context){
-      return AlertDialog(
-        content: Row(
-          spacing: 20,
-          children: [
-            CircularProgressIndicator(),
-             Text("Loading....",
-             style: TextStyle(
-              fontSize: 16,
-              fontWeight: .w400,
-             ),),
-          ],
-        ) ,
-      );
-    } 
-  );
-  }
-  Future<void> _showError( String error) async{
-  return showDialog<void>(
-    context: context,
-    barrierDismissible: false,
-    builder: (BuildContext context){
-      return AlertDialog(
-        title: const Text(
-          "Error",
-          style: TextStyle(
-            fontSize: 20, 
-            fontWeight: .bold,
-            color: Colors.red
-            ),),
-        content: Text(error, style: TextStyle( fontSize: 16, fontWeight: .w600),),
-        actions: [
-          TextButton(
-            child: const Text("Okay"),
-            onPressed: (){
-              Navigator.of(context).pop();
-            },
-            )
-        ],
-      );
-    } 
-  );
-  }
-
 }
+
