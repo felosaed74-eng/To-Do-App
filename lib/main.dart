@@ -28,7 +28,6 @@ class ToDoApp extends StatelessWidget {
         AppRoutes.profile:(context) => ProfileScreen(),
         AppRoutes.addTask:(context) => AddTaskScreen(),
         AppRoutes.home:(context) => HomeScreen(),  
-
       },
     );
   }
