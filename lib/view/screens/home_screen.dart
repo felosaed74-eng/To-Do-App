@@ -1,7 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:todo_app/core/app_routes.dart';
+import 'package:todo_app/data/model/task_model.dart';
+import 'package:todo_app/data/model/user_model.dart';
+import 'package:todo_app/view/widget/header_widget.dart';
+import 'package:todo_app/view/widget/task_info_details_widget.dart';
+import 'package:todo_app/view/widget/task_item_widget.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen ({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  List<TaskModel> tasks = []; 
+  int numOfTasks = 0;
+  int numOfPending = 0;
+  int numOfDone = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    getAllTasks();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,123 +35,70 @@ class HomeScreen extends StatelessWidget {
           spacing: 20,
           children: [
             SizedBox(height: 60,),
-            HeaderWidget(),
-            TaskInfoDetails(numOfTasks: 12, numOfPending: 5, numOfDone: 7),
-        
+            HeaderWidget(fullName: getName(),),
+            TaskInfoDetails(numOfTasks: numOfTasks, numOfPending: numOfPending, numOfDone: numOfDone),
+            Expanded(
+              child: ListView.separated(
+                itemBuilder: (context, index) => TaskItem(
+                  task: tasks[index], 
+                  delete: () {
+                    deleteItem(index);
+                },),
+                itemCount: tasks.length,
+                separatorBuilder: (context, index) => SizedBox(height: 10,),
+              ),
+            ),
           ],
         ),
       ),
-    );
-  }
-}
-
-class HeaderWidget extends StatelessWidget {
-
-  const HeaderWidget({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      spacing: 10,
-      children: [
-        Container(
+      floatingActionButton:InkWell(
+        onTap: () async {
+          await Navigator.of(context).pushNamed(AppRoutes.addTask);
+          getAllTasks();
+        },
+        child: Container(
+          decoration: BoxDecoration(color: Colors.white, 
+          boxShadow: [BoxShadow(
+            color: Colors.black.withAlpha(20), 
+            offset: Offset(5, 5),
+          ),],
+          ),
           padding: EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: Color(0xffE8ECF5),
-            borderRadius: BorderRadius.circular(100)
-          ),
-         child: Icon(Icons.person, size: 50, color: Color(0xff3F51B5),),
-       ),
-       Column(
-        crossAxisAlignment: .start,
-        mainAxisSize: .min ,
-        spacing: 10,
-        children: [
-           Text("Good Morning", style: TextStyle(
-             fontSize: 16,
-             fontWeight: .w400,
-             color: Colors.grey
-           ),
-          ),
-          Text("Felopateer", style: TextStyle(
-             fontSize: 16,
-             fontWeight: .bold,
-             color: Colors.black
-           ),
-          ),
-        ],
-       ),
-      ],
-    );
-  }
-}
-
-class TaskInfoDetails extends StatelessWidget {
-  const TaskInfoDetails({
-    super.key, 
-    required this.numOfTasks, 
-    required this.numOfPending, 
-    required this.numOfDone,
-    });
-
- final int numOfTasks;
- final int numOfPending;
- final int numOfDone;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      decoration: BoxDecoration(
-        color: Color(0xff3F51B5),
-        borderRadius: BorderRadius.circular(12), 
-      ),
-      child: Row(
-        mainAxisAlignment: .spaceAround,
-        children: [
-         item(numOfTasks, "Tasks"),
-         item(numOfPending, "Pending"),
-         item(numOfDone,"Done"),
-        ],
-      ),
-    );
-  }
-  Widget item( int num, String des){
-   return Column(
-     spacing: 10,
-     mainAxisSize: .min,
-     children: [
-        Text(
-         num.toString(), 
-          style: TextStyle( 
-             fontSize: 24, 
-             fontWeight: .bold, 
-             color: Colors.white
-            ),
-          ),
-        Text(
-          des, 
-          style: TextStyle( 
-            fontSize: 16, 
-            fontWeight: .bold, 
-            color: Colors.white
+          child: Row(
+            spacing: 10,
+              mainAxisSize: .min,
+              children: [
+                Icon(Icons.add, size: 30,),
+                Text("Task"),
+              ],
           ),
         ),
-      ],
+      ),
     );
   }
-}
+  void getAllTasks(){
+    var taskBox = Hive.box<TaskModel>('Tasks');
+    tasks = taskBox.values.toList();
+    numbers();
+    setState(() {});
+  }
 
-class TaskItem extends StatelessWidget {
-  const TaskItem({
-    super.key,
-    required this.task
-  });
+  String  getName () {
+    var taskBox = Hive.box<UserModel>('User');
+    var user = taskBox.get("UserKey");
+    return user?.fullName ?? "Error From Name";
+  }
 
-  final TaskM task;
+  void numbers(){
+    numOfTasks = tasks.length;
+    numOfDone = tasks.where((e)=> e.status == StatusTask.done).toList().length;
+    numOfPending = tasks.where((e)=> e.status == StatusTask.pending).toList().length;
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    return Container() ;
+  void deleteItem (int index) {
+  var taskBox = Hive.box<TaskModel>('Tasks');
+   taskBox.deleteAt(index);
+   tasks.removeAt(index);
+   setState(() {});
   }
 }
