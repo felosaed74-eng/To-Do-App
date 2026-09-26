@@ -1,5 +1,4 @@
-import 'dart:nativewrappers/_internal/vm/lib/developer.dart';
-
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:todo_app/core/app_dialog.dart';
@@ -79,7 +78,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             SizedBox(height: 20,),
             ChooseColorWidget(
              clickColor: (color) {
-               print(color.toString());
+               log(color.toString());
                colorSelected = color;
               },
             ),
@@ -103,10 +102,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               )
               .then((value){
                 Navigator.of(context).pop();
-                titleTask.clear();
-                desTask.clear();
-                colorSelected = 4280391411;
-
+                Navigator.of(context).pop();
               })
               .catchError((error){
                 Navigator.of(context).pop();
